@@ -1,0 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@300&display=swap');
+.app{
+    min-height: 100vh;
+    display: flex;
+    background-image: url('./images/photo-1483004406427-6acb078d1f2d.avif');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    color: black;
+}
