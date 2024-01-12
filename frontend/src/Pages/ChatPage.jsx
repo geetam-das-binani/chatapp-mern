@@ -16,6 +16,7 @@ fetchChats()
     },[])
   return (
     <div>
+      chats
       {
       chats.length>0 &&  chats.map((chat,index)=>{
             return(

@@ -10,8 +10,9 @@ import { v2 as cloudinary } from "cloudinary";
 import { connectToDatabase } from "./database/database.mjs";
 import { errorMiddleware } from "./middlewares/errorMiddleware.mjs";
 import userRoutes from "./routes/userRoutes.mjs";
+import chatRoutes from "./routes/chatRoutes.mjs";
 import { notFound } from "./middlewares/notFound.mjs";
-
+import cors from "cors";
 const app = express();
 const PORT = process.env.PORT || 8000;
 
@@ -23,8 +24,15 @@ cloudinary.config({
 	api_key: process.env.CLOUDINARY_API_KEY,
 	api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-
+// app.use(
+// 	"*",
+// 	cors({
+// 		origin: true,
+// 		credentials: true,
+// 	})
+// );
 app.use("/api/v1", userRoutes);
+app.use("/api/v1", chatRoutes);
 
 // middleware for error
 app.use(notFound);

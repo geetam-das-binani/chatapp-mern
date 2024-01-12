@@ -7,8 +7,12 @@ import {
 	InputGroup,
 	Button,
 	InputRightElement,
+	useToast,
 } from "@chakra-ui/react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 const SignUp = () => {
+	const navigate=useNavigate()
 	const [userCredentials, setUserCredentials] = useState({
 		name: "",
 		email: "",
@@ -17,13 +21,74 @@ const SignUp = () => {
 	});
 	const [pic, setPic] = useState("");
 	const [show, setShow] = useState(false);
+	const [loading, setLoading] = useState(false);
+	const toast = useToast();
 	const handleClick = () => setShow(!show);
 
 	const handleChange = (e) => {
 		setUserCredentials({ ...userCredentials, [e.target.name]: e.target.value });
 	};
-	const submitHandler = () => {
-		console.log(userCredentials);
+	const submitHandler = async () => {
+		if (
+			!userCredentials.name ||
+			!userCredentials.email ||
+			!userCredentials.password ||
+			!userCredentials.confirmPassword
+		) {
+			toast({
+				title: "Error",
+				description: "All fields are required",
+				status: "error",
+				duration: 9000,
+				isClosable: true,
+			});
+			return;
+		}
+		if (userCredentials.password !== userCredentials.confirmPassword) {
+			toast({
+				title: "Error",
+				description: "Passwords do not match",
+				status: "error",
+				duration: 9000,
+				isClosable: true,
+			});
+			return;
+		}
+
+		try {
+			setLoading(true);
+			const formData = new FormData();
+			formData.set("name", userCredentials.name);
+			formData.set("email", userCredentials.email);
+			formData.set("password", userCredentials.password);
+			formData.set("pic", pic);
+			const config = {
+				headers: { "Content-Type": "multipart/form-data" }
+				
+			};
+			// const { data } = await axios.post("http://localhost:8000/api/v1/register", formData, config);
+			const { data } = await axios.post("/api/v1/register", formData, config);
+			
+			localStorage.setItem('user',JSON.stringify(data))
+			toast({
+				title: "Success",
+                description: 'Registered Successfully',
+                status: "success",
+                duration: 9000,
+                isClosable: true,
+			})
+			navigate('/chats')
+		} catch (error) {
+			toast({
+				title: "Error",
+				description: `${error.message}`,
+				status: "error",
+				duration: 9000,
+				isClosable: true,
+			});
+		} finally {
+			setLoading(false);
+		}
 	};
 	return (
 		<VStack spacing="5px">
@@ -97,7 +162,10 @@ const SignUp = () => {
 					width="100%"
 					style={{ marginTop: 15 }}
 					onClick={submitHandler}
-				>Sign Up</Button>
+					isLoading={loading}
+				>
+					Sign Up
+				</Button>
 			</FormControl>
 		</VStack>
 	);

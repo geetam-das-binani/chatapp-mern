@@ -45,6 +45,7 @@ export const registerUser = asyncHandler(async (req, res, next) => {
 
 export const loginUser = asyncHandler(async (req, res, next) => {
 	const { email, password } = req.body;
+
 	//  checking if user has given password and email or not
 	if (!password || !email) {
 		return next(new ErrorHandler("All fields are required", 400));
@@ -60,4 +61,27 @@ export const loginUser = asyncHandler(async (req, res, next) => {
 		return next(new ErrorHandler("Invalid Credentials", 401));
 
 	sendResponse(isRegisteredUser, res, 201);
+});
+export const allUsers = asyncHandler(async (req, res, next) => {
+	const keyword = req.query.search
+		? {
+				$or: [
+					{ name: { $regex: req.query.search, $options: "i" } },
+					{
+						email: { $regex: req.query.search, $options: "i" },
+					},
+				],
+		  }
+		: {};
+	// get all users except the one who is currenly logged in otherwise in search
+	// results  may be the logged in user will also be there which is not ideal
+
+	// const users = await User.find({ ...keyword }).find({
+	// 	_id: { $ne: req.user._id },
+	// });
+	// or below one
+	const users = await User.find({ ...keyword, _id: { $ne: req.user._id } });
+	res.status(200).json({
+		users,
+	});
 });
