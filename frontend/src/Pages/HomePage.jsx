@@ -13,14 +13,13 @@ import {
 import Login from "../components/Authentication/Login";
 import SignUp from "../components/Authentication/SignUp";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 const HomePage = () => {
-	const navigate=useNavigate()
-	useEffect(()=>{
-		if(localStorage.getItem('user')){
-            navigate('/chats')
-        }
-
-	},[])
+	const { user } = useSelector((state) => state.user);
+	const navigate = useNavigate();
+	useEffect(() => {
+		if (user) navigate("/chats");
+	}, [user, navigate]);
 	return (
 		<Container maxW="xl" centerContent>
 			<Box
@@ -42,11 +41,18 @@ const HomePage = () => {
 					We Chat{" "}
 				</Text>
 			</Box>
-			<Box bg="white" w="100%" p={4} borderRadius="lg" color='black' borderWidth="1px">
-				<Tabs variant="soft-rounded" >
-					<TabList mb='1em'>
-						<Tab width='50%'>Login</Tab>
-						<Tab width='50%' >Sign Up</Tab>
+			<Box
+				bg="white"
+				w="100%"
+				p={4}
+				borderRadius="lg"
+				color="black"
+				borderWidth="1px"
+			>
+				<Tabs variant="soft-rounded">
+					<TabList mb="1em">
+						<Tab width="50%">Login</Tab>
+						<Tab width="50%">Sign Up</Tab>
 					</TabList>
 					<TabPanels>
 						<TabPanel>

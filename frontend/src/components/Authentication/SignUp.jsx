@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
 	FormControl,
 	FormLabel,
@@ -11,8 +11,13 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { registerUser } from "../../Reducers/userReducer";
+import { useDispatch, useSelector } from "react-redux";
 const SignUp = () => {
-	const navigate=useNavigate()
+	const navigate = useNavigate();
+	const dispatch = useDispatch();
+	const { user } = useSelector((state) => state.user);
+
 	const [userCredentials, setUserCredentials] = useState({
 		name: "",
 		email: "",
@@ -49,7 +54,7 @@ const SignUp = () => {
 				title: "Error",
 				description: "Passwords do not match",
 				status: "error",
-				duration: 9000,
+				duration: 3000,
 				isClosable: true,
 			});
 			return;
@@ -63,33 +68,34 @@ const SignUp = () => {
 			formData.set("password", userCredentials.password);
 			formData.set("pic", pic);
 			const config = {
-				headers: { "Content-Type": "multipart/form-data" }
-				
+				headers: { "Content-Type": "multipart/form-data" },
 			};
 			// const { data } = await axios.post("http://localhost:8000/api/v1/register", formData, config);
 			const { data } = await axios.post("/api/v1/register", formData, config);
-			
-			localStorage.setItem('user',JSON.stringify(data))
+
+			dispatch(registerUser(data));
 			toast({
 				title: "Success",
-                description: 'Registered Successfully',
-                status: "success",
-                duration: 9000,
-                isClosable: true,
-			})
-			navigate('/chats')
+				description: "Registered Successfully",
+				status: "success",
+				duration: 3000,
+				isClosable: true,
+			});
 		} catch (error) {
 			toast({
 				title: "Error",
-				description: `${error.message}`,
+				description: `${error.response.data.message}`,
 				status: "error",
-				duration: 9000,
+				duration: 3000,
 				isClosable: true,
 			});
 		} finally {
 			setLoading(false);
 		}
 	};
+	useEffect(() => {
+		if (user) navigate("/chats");
+	}, [dispatch, user, navigate]);
 	return (
 		<VStack spacing="5px">
 			<FormControl id="first-name" isRequired>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
 	FormControl,
 	FormLabel,
@@ -10,11 +10,16 @@ import {
 	useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
-
 import { useNavigate } from "react-router-dom";
+import { loginUser } from "../../Reducers/userReducer";
+import { useDispatch, useSelector } from "react-redux";
+
 const Login = () => {
-	const toast = useToast();
 	const navigate = useNavigate();
+	const dispatch = useDispatch();
+	const { user } = useSelector((state) => state.user);
+	const toast = useToast();
+
 	const [userCredentials, setUserCredentials] = useState({
 		email: "",
 		password: "",
@@ -33,7 +38,7 @@ const Login = () => {
 				title: "Error",
 				description: "All fields are required ",
 				status: "error",
-				duration: 9000,
+				duration: 3000,
 				isClosable: true,
 			});
 			return;
@@ -43,35 +48,36 @@ const Login = () => {
 			const config = {
 				headers: { "Content-Type": "application/json" },
 			};
-			
-			
+
 			const { data } = await axios.post(
 				"/api/v1/login",
 				{ email: userCredentials.email, password: userCredentials.password },
 				config
 			);
 
-			localStorage.setItem("user", JSON.stringify(data));
 			toast({
 				title: "Success",
 				description: "Login Success",
 				status: "success",
-				duration: 9000,
+				duration: 3000,
 				isClosable: true,
 			});
-			navigate("/chats");
+			dispatch(loginUser(data));
 		} catch (error) {
 			toast({
 				title: "Error",
 				description: `${error.response.data.message}`,
 				status: "error",
-				duration: 9000,
+				duration: 3000,
 				isClosable: true,
 			});
 		} finally {
 			setLoading(false);
 		}
 	};
+	useEffect(() => {
+		if (user) navigate("/chats");
+	}, [dispatch, user, navigate]);
 
 	return (
 		<VStack spacing="5px">
@@ -115,10 +121,12 @@ const Login = () => {
 					colorScheme="red"
 					width="100%"
 					style={{ marginTop: 15 }}
-					onClick={()=>setUserCredentials({
-						email:"geetambinani6@gmail.com",
-						password:"123456"
-					})}
+					onClick={() =>
+						setUserCredentials({
+							email: "geetambinani6@gmail.com",
+							password: "123456",
+						})
+					}
 				>
 					Get Guest User Credentials{" "}
 				</Button>

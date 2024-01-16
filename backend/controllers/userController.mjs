@@ -63,12 +63,12 @@ export const loginUser = asyncHandler(async (req, res, next) => {
 	sendResponse(isRegisteredUser, res, 201);
 });
 export const allUsers = asyncHandler(async (req, res, next) => {
-	const keyword = req.query.search
+	const keyword = req.query.keyword
 		? {
 				$or: [
-					{ name: { $regex: req.query.search, $options: "i" } },
+					{ name: { $regex: req.query.keyword, $options: "i" } },
 					{
-						email: { $regex: req.query.search, $options: "i" },
+						email: { $regex: req.query.keyword, $options: "i" },
 					},
 				],
 		  }
