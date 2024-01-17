@@ -17,6 +17,7 @@ import {
 	DrawerHeader,
 	DrawerBody,
 	Input,
+	Spinner,
 } from "@chakra-ui/react";
 import { BellIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import axios from "axios";
@@ -24,11 +25,12 @@ import React, { useState, Fragment } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ProfileModal from "./ProfileModal";
 import { logoutUser } from "../Reducers/userReducer";
-import ChatLoading from "../components/ChatLoading.jsx";
-import UsersListItem from "../components/Users/UsersListItem.jsx";
-
+import ChatLoading from "../components/ChatLoading";
+import UsersListItem from "../components/Users/UsersListItem";
+import { userSelectedChat, userChats } from "../Reducers/chatReduer";
 const SideDrawer = () => {
 	const { user: loggedUser } = useSelector((state) => state.user);
+	const { selectedChat, chats } = useSelector((state) => state.chat);
 	const dispatch = useDispatch();
 	const toast = useToast();
 	const { isOpen, onOpen, onClose } = useDisclosure();
@@ -85,7 +87,7 @@ const SideDrawer = () => {
 			});
 		}
 	};
-	const accessChat = (userid) => {
+	const accessChat = async (userId) => {
 		try {
 			setLoadingChat(true);
 			const config = {
@@ -94,7 +96,28 @@ const SideDrawer = () => {
 					"Content-Type": "application/json",
 				},
 			};
-		} catch (error) {}
+			const { data } = await axios.post(
+				"/api/v1/createchat",
+				{ userId },
+				config
+			);
+
+			if (!chats.find((c) => c._id === data._id))
+				dispatch(userChats([...chats, data]));
+			setLoadingChat(false);
+			dispatch(userSelectedChat(data));
+
+			onClose();
+		} catch (error) {
+			toast({
+				title: "Error fetching the chat",
+				description: error.message,
+				status: "error",
+				duration: 3000,
+				isClosable: true,
+				position: "bottom-left",
+			});
+		}
 	};
 	return (
 		<Fragment>
@@ -170,6 +193,7 @@ const SideDrawer = () => {
 								/>
 							))
 						)}
+						{loadingChat && <Spinner ml="auto" display="flex" />}
 					</DrawerBody>
 				</DrawerContent>
 			</Drawer>

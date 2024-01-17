@@ -15,6 +15,7 @@ export const userReducer = createSlice({
 		},
 		loginUser: (state, action) => {
 			state.user = action.payload;
+			console.log(action.payload);
 			localStorage.setItem("userInfo", JSON.stringify(action.payload));
 		},
 		logoutUser: (state) => {

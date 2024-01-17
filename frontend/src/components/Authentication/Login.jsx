@@ -54,7 +54,7 @@ const Login = () => {
 				{ email: userCredentials.email, password: userCredentials.password },
 				config
 			);
-
+			console.log(data);
 			toast({
 				title: "Success",
 				description: "Login Success",
@@ -77,8 +77,8 @@ const Login = () => {
 	};
 	useEffect(() => {
 		if (user) navigate("/chats");
-	}, [dispatch, user, navigate]);
-
+	}, [user]);
+	console.log(user);
 	return (
 		<VStack spacing="5px">
 			<FormControl id="email" isRequired>
