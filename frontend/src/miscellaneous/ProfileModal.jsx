@@ -15,9 +15,8 @@ import {
 } from "@chakra-ui/react";
 import { useSelector } from "react-redux";
 import { ViewIcon } from "@chakra-ui/icons";
-const ProfileModal = ({ children }) => {
+const ProfileModal = ({ user, children }) => {
 	const { isOpen, onOpen, onClose } = useDisclosure();
-	const { user: loggedUser } = useSelector((state) => state.user);
 
 	return (
 		<>
@@ -35,7 +34,7 @@ const ProfileModal = ({ children }) => {
 						display="flex"
 						justifyContent="center"
 					>
-						{loggedUser.user.name}
+						{user.name}
 					</ModalHeader>
 					<ModalCloseButton />
 					<ModalBody
@@ -47,11 +46,11 @@ const ProfileModal = ({ children }) => {
 						<Image
 							borderRadius="full"
 							boxSize="150px"
-							src={loggedUser.user.pic}
-							alt={loggedUser.user.name}
+							src={user.pic}
+							alt={user.name}
 						/>
 						<Text fontFamily="Work sans" fontSize="20px">
-							Email:{loggedUser.user.email}
+							Email:{user.email}
 						</Text>
 					</ModalBody>
 
@@ -59,7 +58,6 @@ const ProfileModal = ({ children }) => {
 						<Button colorScheme="blue" mr={3} onClick={onClose}>
 							Close
 						</Button>
-						<Button variant="ghost">Secondary Action</Button>
 					</ModalFooter>
 				</ModalContent>
 			</Modal>

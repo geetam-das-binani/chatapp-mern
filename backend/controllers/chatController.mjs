@@ -62,10 +62,12 @@ export const fetchChats = asyncHandler(async (req, res, next) => {
 	res.send(chats);
 });
 export const createGroupChat = asyncHandler(async (req, res, next) => {
-	if (!req.body.name || !req.body.users)
+	console.log(req.body.selectedUsers);
+	if (!req.body.name || !req.body.selectedUsers.length) {
 		return next(new ErrorHandler("Please fill all the fields", 400));
+	}
 
-	const users = req.body.users;
+	const users = JSON.parse(req.body.selectedUsers);
 	if (users.length < 2)
 		return next(
 			new ErrorHandler(

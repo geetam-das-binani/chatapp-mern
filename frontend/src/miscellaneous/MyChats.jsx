@@ -1,11 +1,13 @@
 import React, { useEffect } from "react";
-import { Box, Button, Stack, useToast } from "@chakra-ui/react";
+import { Box, Button, Stack, useToast, Text } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import { userSelectedChat, userChats } from "../Reducers/chatReduer";
 import axios from "axios";
+import { getSender } from "../utils/chatUtils";
 import { AddIcon } from "@chakra-ui/icons";
 import ChatLoading from "../components/ChatLoading";
-const MyChats = () => {
+import GroupChatModal from "./GroupChatModal";
+const MyChats = ({ fetchAgain }) => {
 	const dispatch = useDispatch();
 	const { selectedChat, chats } = useSelector((state) => state.chat);
 	const { user: loggedUser } = useSelector((state) => state.user);
@@ -18,12 +20,12 @@ const MyChats = () => {
 				},
 			};
 			const { data } = await axios.get(`/api/v1/getallchats`, config);
-			console.log(data);
+
 			dispatch(userChats(data));
 		} catch (error) {
 			toast({
 				title: "Error Occured",
-				description: error.message,
+				description: error.response.data.message,
 				status: "error",
 				duration: 3000,
 				isClosable: true,
@@ -33,10 +35,11 @@ const MyChats = () => {
 	};
 	useEffect(() => {
 		fetchChats();
-	}, []);
+	}, [fetchAgain]);
+
 	return (
 		<Box
-			display={{ base: selectedChat ? "none" : "flex", md: "flex" }}
+			display={{ base: selectedChat._id ? "none" : "flex", md: "flex" }}
 			flexDir="column"
 			alignItems="center"
 			p={3}
@@ -56,13 +59,15 @@ const MyChats = () => {
 				alignItems="center"
 			>
 				My Chats
-				<Button
-					display="flex"
-					fontSize={{ base: "17px", md: "10px", lg: "17px" }}
-					rightIcon={<AddIcon />}
-				>
-					New Group Chat
-				</Button>
+				<GroupChatModal>
+					<Button
+						display="flex"
+						fontSize={{ base: "17px", md: "10px", lg: "17px" }}
+						rightIcon={<AddIcon />}
+					>
+						New Group Chat
+					</Button>
+				</GroupChatModal>
 			</Box>
 			<Box
 				display="flex"
@@ -76,17 +81,24 @@ const MyChats = () => {
 			>
 				{chats.length > 0 ? (
 					<Stack overflowY="scroll">
-						{chats?.map((chat) => (
-							<Box
-								key={chat._id}
-								onClick={() => dispatch(userSelectedChat(chat))}
-								bg={selectedChat === chat ? "#38B2AC" : "3E8E8E8"}
-								color={selectedChat === chat ? "white" : "black"}
-								px={3}
-								py={2}
-								borderRadius="lg"
-							></Box>
-						))}
+						{chats.length > 0 &&
+							chats?.map((chat) => (
+								<Box
+									key={chat._id}
+									onClick={() => dispatch(userSelectedChat(chat))}
+									bg={selectedChat === chat ? "#38B2AC" : "#dadada"}
+									color={selectedChat === chat ? "white" : "black"}
+									px={3}
+									py={2}
+									borderRadius="lg"
+								>
+									<Text>
+										{!chat.isGroupChat
+											? getSender(chat.users, loggedUser)
+											: chat.chatName}
+									</Text>
+								</Box>
+							))}
 					</Stack>
 				) : (
 					<ChatLoading />

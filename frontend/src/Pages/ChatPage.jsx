@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Box } from "@chakra-ui/react";
 import { useSelector } from "react-redux";
 import SideDrawer from "../miscellaneous/SideDrawer";
@@ -6,6 +6,7 @@ import MyChats from "../miscellaneous/MyChats.jsx";
 import ChatBox from "../miscellaneous/ChatBox.jsx";
 const ChatPage = () => {
 	const { user } = useSelector((state) => state.user);
+	const [fetchAgain, setFetchAgain] = useState(false);
 	return (
 		<div
 			style={{
@@ -20,9 +21,11 @@ const ChatPage = () => {
 				p="10px"
 				w="100%"
 			>
-				{user && <MyChats />}
+				{user && <MyChats fetchAgain={fetchAgain} />}
 
-				{user && <ChatBox />}
+				{user && (
+					<ChatBox fetchAgain={fetchAgain} setFetchAgain={setFetchAgain} />
+				)}
 			</Box>
 		</div>
 	);
