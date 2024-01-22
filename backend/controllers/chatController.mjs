@@ -62,7 +62,6 @@ export const fetchChats = asyncHandler(async (req, res, next) => {
 	res.send(chats);
 });
 export const createGroupChat = asyncHandler(async (req, res, next) => {
-	console.log(req.body.selectedUsers);
 	if (!req.body.name || !req.body.selectedUsers.length) {
 		return next(new ErrorHandler("Please fill all the fields", 400));
 	}
@@ -140,8 +139,7 @@ export const removeFromGroup = asyncHandler(async (req, res, next) => {
 	const { userId, chatGroupId } = req.body;
 	if (!userId || !chatGroupId)
 		return next(new ErrorHandler("Please fill all the fields", 400));
-	if (userId.toString() === req.user._id.toString())
-		return next(new ErrorHandler("Admin cannot be removed", 400));
+
 	const removedChatOfUser = await Chat.findByIdAndUpdate(
 		chatGroupId,
 		{

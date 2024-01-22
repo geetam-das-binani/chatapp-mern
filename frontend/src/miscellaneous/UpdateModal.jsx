@@ -22,7 +22,7 @@ import UserBadgeItem from "../components/Users/UserBadgeItem";
 import axios from "axios";
 import { userSelectedChat } from "../Reducers/chatReduer";
 import UsersListItem from "../components/Users/UsersListItem";
-const UpdateModal = ({ fetchAgain, setFetchAgain }) => {
+const UpdateModal = ({ fetchAgain, setFetchAgain, fetchMessages }) => {
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const { user: loggedUser } = useSelector((state) => state.user);
 	const toast = useToast();
@@ -33,7 +33,51 @@ const UpdateModal = ({ fetchAgain, setFetchAgain }) => {
 	const [searchResults, setSearchResults] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [renameLoading, setRenameLoading] = useState(false);
-	const handleRemove = () => {};
+	const handleRemoveUserFromGroup = async (user) => {
+		if (!(selectedChat.groupAdmin._id === loggedUser.user._id)) {
+			toast({
+				title: "Only Admins can remove someone",
+
+				status: "error",
+
+				duration: 3000,
+				isClosable: true,
+				position: "bottom",
+			});
+			return;
+		}
+
+		try {
+			const config = {
+				headers: {
+					Authorization: `Bearer ${loggedUser.token}`,
+				},
+			};
+			const { data } = await axios.put(
+				`/api/v1/groupremove`,
+				{
+					userId: user._id,
+					chatGroupId: selectedChat._id,
+				},
+				config
+			);
+			user._id === loggedUser.user._id
+				? dispatch(userSelectedChat(""))
+				: dispatch(userSelectedChat(data));
+
+			setFetchAgain(!fetchAgain);
+			fetchMessages(); // fetch latest messages after removing from group
+		} catch (error) {
+			toast({
+				description: error.response.data.message,
+				status: "error",
+
+				duration: 3000,
+				isClosable: true,
+				position: "bottom",
+			});
+		}
+	};
 	const handleAddUser = async (user) => {
 		if (selectedChat.users.find((u) => u._id === user._id)) {
 			toast({
@@ -43,7 +87,7 @@ const UpdateModal = ({ fetchAgain, setFetchAgain }) => {
 
 				duration: 3000,
 				isClosable: true,
-				position: "bottom",
+				position: "top-left",
 			});
 			return;
 		}
@@ -158,6 +202,36 @@ const UpdateModal = ({ fetchAgain, setFetchAgain }) => {
 			});
 		}
 	};
+
+	const handleLeaveGroup = async () => {
+		try {
+			const config = {
+				headers: {
+					Authorization: `Bearer ${loggedUser.token}`,
+				},
+			};
+			await axios.put(
+				`/api/v1/groupremove`,
+				{
+					userId: loggedUser.user._id,
+					chatGroupId: selectedChat._id,
+				},
+				config
+			);
+
+			dispatch(userSelectedChat(""));
+			setFetchAgain(!fetchAgain);
+		} catch (error) {
+			toast({
+				description: error.response.data.message,
+				status: "error",
+
+				duration: 3000,
+				isClosable: true,
+				position: "bottom",
+			});
+		}
+	};
 	return (
 		<>
 			<IconButton
@@ -184,7 +258,7 @@ const UpdateModal = ({ fetchAgain, setFetchAgain }) => {
 								<UserBadgeItem
 									key={user._id}
 									{...user}
-									handleFunction={() => handleRemove(user)}
+									handleFunction={() => handleRemoveUserFromGroup(user)}
 								/>
 							))}
 						</Box>
@@ -230,7 +304,7 @@ const UpdateModal = ({ fetchAgain, setFetchAgain }) => {
 					</ModalBody>
 
 					<ModalFooter>
-						<Button colorScheme="red" mr={3} onClick={() => {}}>
+						<Button colorScheme="red" mr={3} onClick={() => handleLeaveGroup()}>
 							Leave Group
 						</Button>
 					</ModalFooter>

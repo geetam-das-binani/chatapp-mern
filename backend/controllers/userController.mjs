@@ -59,7 +59,7 @@ export const loginUser = asyncHandler(async (req, res, next) => {
 	const isPasswordMatched = await isRegisteredUser.comparePassword(password);
 	if (!isPasswordMatched)
 		return next(new ErrorHandler("Invalid Credentials", 401));
-
+	console.log(isPasswordMatched);
 	sendResponse(isRegisteredUser, res, 201);
 });
 export const allUsers = asyncHandler(async (req, res, next) => {
