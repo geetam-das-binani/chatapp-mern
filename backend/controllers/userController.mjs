@@ -45,7 +45,7 @@ export const registerUser = asyncHandler(async (req, res, next) => {
 
 export const loginUser = asyncHandler(async (req, res, next) => {
 	const { email, password } = req.body;
-
+	console.log(password);
 	//  checking if user has given password and email or not
 	if (!password || !email) {
 		return next(new ErrorHandler("All fields are required", 400));
@@ -57,6 +57,7 @@ export const loginUser = asyncHandler(async (req, res, next) => {
 		return next(new ErrorHandler("Invalid email or password", 401));
 
 	const isPasswordMatched = await isRegisteredUser.comparePassword(password);
+
 	if (!isPasswordMatched)
 		return next(new ErrorHandler("Invalid Credentials", 401));
 	console.log(isPasswordMatched);
