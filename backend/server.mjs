@@ -13,10 +13,45 @@ import userRoutes from "./routes/userRoutes.mjs";
 import chatRoutes from "./routes/chatRoutes.mjs";
 import messageRoutes from "./routes/messageRoutes.mjs";
 import { notFound } from "./middlewares/notFound.mjs";
+import { Server } from "socket.io";
+import http from "http";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
+const server = http.createServer(app);
+const io = new Server(server, {
+	pingTimeout: 60000,
+	cors: {
+		origin: "*",
+	},
+});
+io.on("connection", (socket) => {
+	console.log("connected to socket.io");
+	socket.on("setup", (userData) => {
+		socket.join(userData.userId);
 
+		socket.emit("connected");
+	});
+	socket.on("join chat", (room) => {
+		socket.join(room);
+		console.log("user joined room", room);
+	});
+	socket.on("typing", (room) => socket.in(room).emit("typing"));
+	socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
+	socket.on("new message", (newMessageReceived) => {
+		let chat = newMessageReceived.chats;
+		console.log("new message received", newMessageReceived.chats.users);
+		if (!chat.users) return console.log("chat.users not defined");
+		chat.users.forEach((user) => {
+			if (user._id === newMessageReceived.sender._id) return;
+			socket.in(user._id).emit("message received", newMessageReceived);
+		});
+	});
+	socket.off("setup", () => {
+		console.log("USER DISCONNECTED");
+		socket.leave(userData.userId);
+	});
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -25,13 +60,7 @@ cloudinary.config({
 	api_key: process.env.CLOUDINARY_API_KEY,
 	api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-// app.use(
-// 	"*",
-// 	cors({
-// 		origin: true,
-// 		credentials: true,
-// 	})
-// );
+
 app.use("/api/v1", userRoutes);
 app.use("/api/v1", chatRoutes);
 app.use("/api/v1", messageRoutes);
@@ -41,7 +70,7 @@ app.use(notFound);
 app.use(errorMiddleware);
 connectToDatabase()
 	.then(() => {
-		app.listen(PORT, () => console.log(`Server Started on port ${PORT}`));
+		server.listen(PORT, () => console.log(`Server Started on port ${PORT}`));
 	})
 	.catch((error) => {
 		console.log(error.message);

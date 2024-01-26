@@ -34,7 +34,7 @@ export const isSameSenderMargin = (messages, m, i, loggedUser) => {
 		i < messages.length - 1 &&
 		messages[i + 1].sender._id === m.sender._id
 	) {
-		return 33; // Margin for different senders
+		return 0; // Margin for same senders
 	} else if (
 		(i < messages.length - 1 &&
 			messages[i + 1].sender._id !== m.sender._id &&
@@ -42,7 +42,8 @@ export const isSameSenderMargin = (messages, m, i, loggedUser) => {
 		(i === messages.length - 1 &&
 			messages[i].sender._id !== loggedUser.user._id)
 	) {
-		return 0; // Margin for same sender or last message
+		// Margin for different  sender and last message
+		return 0; // Margin for different  sender or last message
 	} else {
 		return "auto"; // Default margin
 	}
