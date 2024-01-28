@@ -8,11 +8,13 @@ const messageSchema = new mongoose.Schema(
 		content: {
 			type: String,
 			trim: true,
+			default: null,
 		},
 		chats: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "chats",
 		},
+		image: String,
 	},
 	{
 		timestamps: true,

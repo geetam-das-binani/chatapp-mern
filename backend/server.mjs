@@ -33,14 +33,17 @@ io.on("connection", (socket) => {
 		socket.emit("connected");
 	});
 	socket.on("join chat", (room) => {
-		socket.join(room);
-		console.log("user joined room", room);
+		socket.join(room.roomId);
 	});
-	socket.on("typing", (room) => socket.in(room).emit("typing"));
-	socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
+	socket.on("typing", (room) =>
+		socket.broadcast.to(room.roomId).emit("typing")
+	);
+	socket.on("stop typing", (room) =>
+		socket.broadcast.to(room.roomId).emit("stop typing")
+	);
 	socket.on("new message", (newMessageReceived) => {
 		let chat = newMessageReceived.chats;
-		console.log("new message received", newMessageReceived.chats.users);
+
 		if (!chat.users) return console.log("chat.users not defined");
 		chat.users.forEach((user) => {
 			if (user._id === newMessageReceived.sender._id) return;

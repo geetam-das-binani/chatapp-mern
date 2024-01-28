@@ -18,6 +18,7 @@ import axios from "axios";
 import Lottie from "react-lottie";
 import ScrollableChats from "./ScrollableChats";
 import animationData from "../animations/typing.json";
+import { FaImage } from "react-icons/fa";
 import { io } from "socket.io-client";
 let ENDPONT = "http://localhost:8000";
 let socket, selectedChatCompare;
@@ -56,7 +57,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
 			setMessages(data);
 			setLoading(false);
-			socket.emit("join chat", selectedChat._id);
+			socket.emit("join chat", { roomId: selectedChat._id });
 		} catch (error) {
 			toast({
 				title: "Error Occured",
@@ -70,7 +71,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 	};
 	const sendMessage = async (e) => {
 		if (e.key === "Enter" && newMessage) {
-			socket.emit("stop typing", selectedChat._id);
+			socket.emit("stop typing", { roomId: selectedChat._id });
 			try {
 				const config = {
 					headers: {
@@ -105,10 +106,10 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 	const typingHandler = (e) => {
 		setNewMessage(e.target.value);
 		// typing Indicator logic
+
 		if (!socketConnected) return;
 		if (!istyping) {
-			setisTyping(true);
-			socket.emit("typing", selectedChat._id);
+			socket.emit("typing", { roomId: selectedChat._id });
 		}
 		let lastTypingTime = new Date().getTime();
 		let timerLength = 3000;
@@ -118,9 +119,42 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
 			if (timeDiff >= timerLength && istyping) {
 				setisTyping(false);
-				socket.emit("stop typing", selectedChat._id);
+				socket.emit("stop typing", { roomId: selectedChat._id });
 			}
 		}, timerLength);
+	};
+
+	const handleSendFile = async (e) => {
+		const formData = new FormData();
+		formData.set("chatId", selectedChat._id);
+		formData.set("content", newMessage);
+		formData.set("image", e.target.files[0]);
+
+		try {
+			const config = {
+				headers: {
+					Authorization: `Bearer ${loggedUser.token}`,
+					"Content-Type": "multipart/form-data",
+				},
+			};
+			const { data } = await axios.post(
+				`/api/v1/sendmessage`,
+				formData,
+				config
+			);
+			setNewMessage("");
+			socket.emit("new message", data);
+			setMessages([...messages, data]);
+		} catch (error) {
+			toast({
+				title: "Error Occured",
+				description: error.response.data.message,
+				status: "error",
+				duration: 3000,
+				isClosable: true,
+				position: "bottom-left",
+			});
+		}
 	};
 	useEffect(() => {
 		socket = io(ENDPONT);
@@ -206,7 +240,13 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 								<ScrollableChats messages={messages} />
 							</div>
 						)}
-						<FormControl mt={3} isRequired onKeyDown={sendMessage}>
+						<FormControl
+							display="flex"
+							alignItems="center"
+							mt={3}
+							isRequired
+							onKeyDown={sendMessage}
+						>
 							{istyping && (
 								<div>
 									<Lottie
@@ -223,6 +263,21 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 								onChange={typingHandler}
 								value={newMessage}
 							/>
+							<label
+								htmlFor="file"
+								style={{
+									display: "inline-block",
+									margin: "0 1rem",
+								}}
+							>
+								<input
+									type="file"
+									id="file"
+									style={{ display: "none" }}
+									onChange={handleSendFile}
+								/>
+								<FaImage />
+							</label>
 						</FormControl>
 					</Box>
 				</>

@@ -7,21 +7,7 @@ export const getSenderFullDetails = (users, loggedUser) => {
 	const sender = users.find((user) => user._id !== loggedUser.user._id);
 	return sender;
 };
-export const isSameSender = (messages, m, i, loggedUser) => {
-	return (
-		(i < messages.length - 1 && messages[i].sender._id !== m.sender._id) ||
-		(messages[i + 1].sender._id !== undefined &&
-			messages[i + 1].sender._id !== loggedUser.user._id)
-	);
-};
-export const isLastMessage = (messages, i, loggedUser) => {
-	const lastMessage = messages[messages.length - 1];
-	return (
-		i === messages.length - 1 &&
-		lastMessage.sender && // Check if 'sender' exists
-		lastMessage.sender._id !== loggedUser.user._id
-	);
-};
+
 export const isLastMessageInGroup = (messages, i) => {
 	const currentSender = messages[i];
 	const nextSender = i < messages.length - 1 ? messages[i + 1] : null;
