@@ -27,7 +27,7 @@ const UpdateModal = ({ fetchAgain, setFetchAgain, fetchMessages }) => {
 	const { user: loggedUser } = useSelector((state) => state.user);
 	const toast = useToast();
 	const dispatch = useDispatch();
-	const { selectedChat, chats } = useSelector((state) => state.chat);
+	const { selectedChat } = useSelector((state) => state.chat);
 	const [groupChatName, setGroupChatName] = useState("");
 	const [search, setSearch] = useState("");
 	const [searchResults, setSearchResults] = useState([]);

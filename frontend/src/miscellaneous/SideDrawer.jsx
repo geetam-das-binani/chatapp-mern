@@ -16,8 +16,10 @@ import {
 	DrawerContent,
 	DrawerHeader,
 	DrawerBody,
+	DrawerFooter,
 	Input,
 	Spinner,
+	Badge,
 } from "@chakra-ui/react";
 import { BellIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import axios from "axios";
@@ -28,9 +30,12 @@ import { logoutUser } from "../Reducers/userReducer";
 import ChatLoading from "../components/ChatLoading";
 import UsersListItem from "../components/Users/UsersListItem";
 import { userSelectedChat, userChats } from "../Reducers/chatReduer";
+import { clearNotifications } from "../Reducers/notificationsReducer";
+import { getSender } from "../utils/chatUtils";
 const SideDrawer = () => {
 	const { user: loggedUser } = useSelector((state) => state.user);
-	const { selectedChat, chats } = useSelector((state) => state.chat);
+	const { chats } = useSelector((state) => state.chat);
+	const { notifications } = useSelector((state) => state.notifications);
 	const dispatch = useDispatch();
 	const toast = useToast();
 	const { isOpen, onOpen, onClose } = useDisclosure();
@@ -119,6 +124,7 @@ const SideDrawer = () => {
 			});
 		}
 	};
+	console.log(notifications);
 	return (
 		<Fragment>
 			<Box
@@ -143,10 +149,41 @@ const SideDrawer = () => {
 				</Text>
 				<div>
 					<Menu>
-						<MenuButton p={1}>
+						<MenuButton position="relative" p={1}>
+							{notifications.length > 0 && (
+								<Badge
+									borderRadius="16px"
+									ml="1"
+									color="white"
+									background="red"
+									position="absolute"
+									left="1px"
+								>
+									{notifications.length}
+								</Badge>
+							)}
+
 							<BellIcon fontSize="2xl" margin={1} />
 						</MenuButton>
-						{/* <MenuList></MenuList> */}
+						<MenuList pl={2}>
+							{!notifications.length && "No New Messsages"}
+							{notifications.map((notif) => (
+								<MenuItem
+									key={notif._id}
+									onClick={() => {
+										dispatch(userSelectedChat(notif.chats));
+										dispatch(clearNotifications(notif));
+									}}
+								>
+									{notif.chats.isGroupChat
+										? `New Message in ${notif.chats.chatName}`
+										: `New Message from ${getSender(
+												notif.chats.users,
+												loggedUser
+										  )}`}
+								</MenuItem>
+							))}
+						</MenuList>
 					</Menu>
 					<Menu>
 						<MenuButton p={1} as={Button} rightIcon={<ChevronDownIcon />}>
@@ -195,6 +232,11 @@ const SideDrawer = () => {
 						)}
 						{loadingChat && <Spinner ml="auto" display="flex" />}
 					</DrawerBody>
+					<DrawerFooter>
+						<Button colorScheme="red" mr={3} onClick={onClose}>
+							Cancel
+						</Button>
+					</DrawerFooter>
 				</DrawerContent>
 			</Drawer>
 		</Fragment>

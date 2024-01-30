@@ -59,7 +59,7 @@ export const fetchChats = asyncHandler(async (req, res, next) => {
 
 		path: "latestMessage.sender",
 	});
-	res.send(chats);
+	res.status(200).send(chats);
 });
 export const createGroupChat = asyncHandler(async (req, res, next) => {
 	if (!req.body.name || !req.body.selectedUsers.length) {

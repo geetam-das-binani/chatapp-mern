@@ -20,6 +20,7 @@ import ScrollableChats from "./ScrollableChats";
 import animationData from "../animations/typing.json";
 import { FaImage } from "react-icons/fa";
 import { io } from "socket.io-client";
+import { setNotifications } from "../Reducers/notificationsReducer";
 let ENDPONT = "http://localhost:8000";
 let socket, selectedChatCompare;
 const defaultOptons = {
@@ -108,8 +109,10 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 		// typing Indicator logic
 
 		if (!socketConnected) return;
-		if (!istyping) {
+		if (e.target.value && !istyping) {
 			socket.emit("typing", { roomId: selectedChat._id });
+		} else {
+			socket.emit("stop typing", { roomId: selectedChat._id });
 		}
 		let lastTypingTime = new Date().getTime();
 		let timerLength = 3000;
@@ -119,6 +122,8 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
 			if (timeDiff >= timerLength && istyping) {
 				setisTyping(false);
+				socket.emit("stop typing", { roomId: selectedChat._id });
+			} else {
 				socket.emit("stop typing", { roomId: selectedChat._id });
 			}
 		}, timerLength);
@@ -167,13 +172,15 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 		fetchMessages();
 		selectedChatCompare = selectedChat;
 	}, [selectedChat._id]);
+
 	useEffect(() => {
 		socket.on("message received", (newMessageRecieved) => {
 			if (
 				!selectedChatCompare ||
 				selectedChatCompare._id !== newMessageRecieved.chats._id
 			) {
-				// give notification
+				dispatch(setNotifications(newMessageRecieved));
+				setFetchAgain(!fetchAgain);
 			} else {
 				setMessages([...messages, newMessageRecieved]);
 			}
@@ -196,11 +203,15 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 						<IconButton
 							display={{ base: "flex", md: "none" }}
 							icon={<ArrowBackIcon />}
-							onClick={() => dispatch(userSelectedChat(""))}
+							onClick={() => {
+								dispatch(userSelectedChat(""));
+								setFetchAgain(!fetchAgain);
+							}}
 						/>
 						{selectedChat.isGroupChat ? (
 							<>
 								{selectedChat.chatName.toUpperCase()}
+
 								<UpdateModal
 									fetchAgain={fetchAgain}
 									setFetchAgain={setFetchAgain}

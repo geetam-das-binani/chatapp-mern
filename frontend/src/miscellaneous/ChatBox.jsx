@@ -3,10 +3,8 @@ import { Box } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import SingleChat from "../components/SingleChat";
 const ChatBox = ({ fetchAgain, setFetchAgain }) => {
-	const { user: loggedUser } = useSelector((state) => state.user);
-	const { selectedChat, chats } = useSelector((state) => state.chat);
+	const { selectedChat } = useSelector((state) => state.chat);
 
-	const dispatch = useDispatch();
 	return (
 		<Box
 			display={{ base: selectedChat._id ? "flex" : "none", md: "flex" }}

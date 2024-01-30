@@ -37,6 +37,11 @@ const MyChats = ({ fetchAgain }) => {
 		fetchChats();
 	}, [fetchAgain]);
 
+	const formattedDate = (date) => {
+		if (!date) return "";
+		const [hr, min, ...rest] = new Date(date).toLocaleTimeString().split(":");
+		return `${hr}:${min} ${rest.join("").slice(2)}`;
+	};
 	return (
 		<Box
 			display={{ base: selectedChat._id ? "none" : "flex", md: "flex" }}
@@ -96,6 +101,12 @@ const MyChats = ({ fetchAgain }) => {
 										{!chat.isGroupChat
 											? getSender(chat.users, loggedUser)
 											: chat.chatName}
+									</Text>
+									<Text display="flex" justifyContent="space-between" as="b">
+										{chat?.latestMessage?.content ?? ""}
+										<span>
+											{formattedDate(chat?.latestMessage?.createdAt ?? "")}
+										</span>
 									</Text>
 								</Box>
 							))}

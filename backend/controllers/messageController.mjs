@@ -42,7 +42,7 @@ export const sendMessage = asyncHandler(async (req, res, next) => {
 	await Chat.findByIdAndUpdate(chatId, {
 		latestMessage: message._id,
 	});
-	console.log(message);
+
 	return res.status(200).json(message);
 });
 export const allMessages = asyncHandler(async (req, res, next) => {
