@@ -11,7 +11,12 @@ import {
 	Text,
 } from "@chakra-ui/react";
 import { ArrowBackIcon } from "@chakra-ui/icons";
-import { getSenderFullDetails, getSender } from "../utils/chatUtils";
+import {
+	getSenderFullDetails,
+	getSender,
+	isUserOnline,
+	getUserLastOnlineTime,
+} from "../utils/chatUtils";
 import ProfileModal from "../miscellaneous/ProfileModal";
 import UpdateModal from "../miscellaneous/UpdateModal";
 import axios from "axios";
@@ -185,7 +190,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 		fetchMessages();
 		selectedChatCompare = selectedChat;
 	}, [selectedChat._id]);
-	console.log(onlineUsers);
+
 	useEffect(() => {
 		socket.on("message received", (newMessageRecieved) => {
 			if (
@@ -205,7 +210,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 			{selectedChat._id ? (
 				<>
 					<Text
-						fontSize={{ base: "28px", md: "30px" }}
+						fontSize={{ base: "20px", md: "25px" }}
 						pb={3}
 						w="100%"
 						fontFamily="Work sans"
@@ -213,6 +218,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 						justifyContent={{ base: "space-between" }}
 						alignItems="center"
 						px={2}
+						fontWeight="bold"
 					>
 						<IconButton
 							display={{ base: "flex", md: "none" }}
@@ -235,8 +241,22 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 						) : (
 							<>
 								{getSender(selectedChat?.users, loggedUser)}
-								<>Online</>
-
+								<>
+									{isUserOnline(onlineUsers, selectedChat.users, loggedUser) ===
+									"online"
+										? "online"
+										: getUserLastOnlineTime(
+												onlineUsers,
+												selectedChat.users,
+												loggedUser
+										  )
+										? `-last seen ${getUserLastOnlineTime(
+												onlineUsers,
+												selectedChat.users,
+												loggedUser
+										  )}`
+										: ""}
+								</>
 								<ProfileModal
 									user={getSenderFullDetails(selectedChat.users, loggedUser)}
 								/>

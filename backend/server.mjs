@@ -15,7 +15,7 @@ import messageRoutes from "./routes/messageRoutes.mjs";
 import { notFound } from "./middlewares/notFound.mjs";
 import { Server } from "socket.io";
 import http from "http";
-
+import OnlineStatus from "./model/onlineLastSeenModel.mjs";
 const app = express();
 const PORT = process.env.PORT || 8000;
 const server = http.createServer(app);
@@ -26,39 +26,44 @@ const io = new Server(server, {
 	},
 });
 
-let userIds = [];
-const getFormattedDate = () => {
-	const [hr, min, ...rest] = new Date().toLocaleTimeString().split(":");
-	return `${hr}:${min} ${rest.join("").slice(2)}`;
-};
+let userOnlineLastSeeninfo = [];
 
 io.on("connection", (socket) => {
-	console.log("connected to socket.io");
-	socket.on("setup", (userData) => {
+	socket.on("setup", async (userData) => {
 		socket.join(userData.userId);
 
 		socket.emit("connected");
-		if (!userIds.find((u) => u.userId === userData.userId)) {
-			userIds.push({
-				userId: userData.userId,
-				socketId: socket.id,
-				lastOnline: getFormattedDate(),
-				status: "online",
-			});
-		} else {
-			userIds = userIds.map((u) =>
-				u.userId === userData.userId
-					? {
-							...u,
-							socketId: socket.id,
-							lastOnline: getFormattedDate(),
-							status: "online",
-					  }
-					: u
-			);
-		}
 
-		io.emit("user joined", userIds);
+		try {
+			const existingUser = await OnlineStatus.findOne({
+				userId: userData.userId,
+			});
+
+			if (!existingUser) {
+				const userObj = {
+					userId: userData.userId,
+					socketId: socket.id,
+				};
+				await OnlineStatus.create(userObj);
+			} else {
+				await OnlineStatus.findOneAndUpdate(
+					{ userId: userData.userId },
+					{
+						$set: {
+							socketId: socket.id,
+							lastOnline: Date.now(),
+							status: "online",
+						},
+					}
+				);
+			}
+
+			const allUsers = await OnlineStatus.find({});
+			userOnlineLastSeeninfo = allUsers;
+			io.emit("user joined", userOnlineLastSeeninfo);
+		} catch (error) {
+			console.error("Error setting up user:", error);
+		}
 	});
 	socket.on("join chat", (room) => {
 		socket.join(room.roomId);
@@ -78,13 +83,20 @@ io.on("connection", (socket) => {
 			socket.in(user._id).emit("message received", newMessageReceived);
 		});
 	});
-	socket.on("disconnect", () => {
-		userIds = userIds.map((u) =>
-			u.socketId === socket.id
-				? { ...u, lastOnline: getFormattedDate(), status: "offline" }
-				: u
-		);
-		io.emit("user left", userIds);
+	socket.on("disconnect", async () => {
+		try {
+			await OnlineStatus.findOneAndUpdate(
+				{ socketId: socket.id },
+				{ $set: { status: "offline", lastOnline: Date.now() } }
+			);
+
+			const allUsers = await OnlineStatus.find({});
+			userOnlineLastSeeninfo = allUsers;
+
+			io.emit("user left", userOnlineLastSeeninfo);
+		} catch (error) {
+			console.error("Error handling disconnect event:", error);
+		}
 	});
 });
 app.use(express.json());

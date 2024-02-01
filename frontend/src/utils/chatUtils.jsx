@@ -56,5 +56,5 @@ export const getUserLastOnlineTime = (onlineUsers, users, loggedUser) => {
 		(u) => u.userId === getSenderId(users, loggedUser)
 	);
 
-	return !onlineUser ? false : onlineUser.lastOnline;
+	return !onlineUser ? "" : onlineUser.lastOnline;
 };
