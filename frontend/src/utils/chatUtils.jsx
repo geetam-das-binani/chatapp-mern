@@ -8,6 +8,11 @@ export const getSenderFullDetails = (users, loggedUser) => {
 	return sender;
 };
 
+export const getSenderId = (users, loggedUser) => {
+	const sender = users.find((user) => user._id !== loggedUser.user._id);
+	return sender._id;
+};
+
 export const isLastMessageInGroup = (messages, i) => {
 	const currentSender = messages[i];
 	const nextSender = i < messages.length - 1 ? messages[i + 1] : null;
@@ -37,4 +42,19 @@ export const isSameSenderMargin = (messages, m, i, loggedUser) => {
 
 export const isSameUser = (messages, m, i) => {
 	return i > 0 && messages[i - 1].sender._id === m.sender._id;
+};
+
+export const isUserOnline = (onlineUsers, users, loggedUser) => {
+	const onlineUser = onlineUsers.find(
+		(u) => u.userId === getSenderId(users, loggedUser)
+	);
+
+	return !onlineUser ? false : onlineUser.status;
+};
+export const getUserLastOnlineTime = (onlineUsers, users, loggedUser) => {
+	const onlineUser = onlineUsers.find(
+		(u) => u.userId === getSenderId(users, loggedUser)
+	);
+
+	return !onlineUser ? false : onlineUser.lastOnline;
 };

@@ -21,6 +21,7 @@ import animationData from "../animations/typing.json";
 import { FaImage } from "react-icons/fa";
 import { io } from "socket.io-client";
 import { setNotifications } from "../Reducers/notificationsReducer";
+import { setOnlineUsers } from "../Reducers/onlineReducer";
 let ENDPONT = "http://localhost:8000";
 let socket, selectedChatCompare;
 const defaultOptons = {
@@ -37,6 +38,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 	const [loading, setLoading] = useState(false);
 	const [socketConnected, setSocketConnected] = useState(false);
 	const { user: loggedUser } = useSelector((state) => state.user);
+	const { onlineUsers } = useSelector((state) => state.onlineUsers);
 	const { selectedChat } = useSelector((state) => state.chat);
 	const [istyping, setisTyping] = useState(false);
 	const dispatch = useDispatch();
@@ -167,12 +169,23 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 		socket.on("connected", () => setSocketConnected(true));
 		socket.on("stop typing", () => setisTyping(false));
 		socket.on("typing", () => setisTyping(true));
-	}, []);
+		socket.on("user joined", (data) => {
+			dispatch(setOnlineUsers(data));
+		});
+
+		return () => {
+			socket.disconnect({ userId: loggedUser.user._id });
+		};
+	}, [loggedUser.user._id]);
+
 	useEffect(() => {
+		socket.on("user left", (data) => {
+			dispatch(setOnlineUsers(data));
+		});
 		fetchMessages();
 		selectedChatCompare = selectedChat;
 	}, [selectedChat._id]);
-
+	console.log(onlineUsers);
 	useEffect(() => {
 		socket.on("message received", (newMessageRecieved) => {
 			if (
@@ -186,6 +199,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 			}
 		});
 	});
+
 	return (
 		<React.Fragment>
 			{selectedChat._id ? (
@@ -221,6 +235,8 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 						) : (
 							<>
 								{getSender(selectedChat?.users, loggedUser)}
+								<>Online</>
+
 								<ProfileModal
 									user={getSenderFullDetails(selectedChat.users, loggedUser)}
 								/>

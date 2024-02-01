@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
-import { Box, Button, Stack, useToast, Text } from "@chakra-ui/react";
+import { Box, Button, Stack, useToast, Text, Badge } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import { userSelectedChat, userChats } from "../Reducers/chatReduer";
 import axios from "axios";
-import { getSender } from "../utils/chatUtils";
+import { getSender, isUserOnline } from "../utils/chatUtils";
 import { AddIcon } from "@chakra-ui/icons";
 import ChatLoading from "../components/ChatLoading";
 import GroupChatModal from "./GroupChatModal";
@@ -11,6 +11,7 @@ const MyChats = ({ fetchAgain }) => {
 	const dispatch = useDispatch();
 	const { selectedChat, chats } = useSelector((state) => state.chat);
 	const { user: loggedUser } = useSelector((state) => state.user);
+	const { onlineUsers } = useSelector((state) => state.onlineUsers);
 	const toast = useToast();
 	const fetchChats = async () => {
 		try {
@@ -42,6 +43,7 @@ const MyChats = ({ fetchAgain }) => {
 		const [hr, min, ...rest] = new Date(date).toLocaleTimeString().split(":");
 		return `${hr}:${min} ${rest.join("").slice(2)}`;
 	};
+	console.log(onlineUsers);
 	return (
 		<Box
 			display={{ base: selectedChat._id ? "none" : "flex", md: "flex" }}
@@ -96,6 +98,7 @@ const MyChats = ({ fetchAgain }) => {
 									px={3}
 									py={2}
 									borderRadius="lg"
+									position="relative"
 								>
 									<Text>
 										{!chat.isGroupChat
@@ -108,6 +111,24 @@ const MyChats = ({ fetchAgain }) => {
 											{formattedDate(chat?.latestMessage?.createdAt ?? "")}
 										</span>
 									</Text>
+									<Badge
+										borderRadius="16px"
+										variant="solid"
+										colorScheme="green"
+										position="absolute"
+										top="0"
+										right="0"
+										height=".6rem"
+										width=".6rem"
+										background={
+											chat.isGroupChat
+												? ""
+												: isUserOnline(onlineUsers, chat.users, loggedUser) ===
+												  "online"
+												? "green"
+												: ""
+										}
+									/>
 								</Box>
 							))}
 					</Stack>

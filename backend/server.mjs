@@ -25,12 +25,40 @@ const io = new Server(server, {
 		origin: "*",
 	},
 });
+
+let userIds = [];
+const getFormattedDate = () => {
+	const [hr, min, ...rest] = new Date().toLocaleTimeString().split(":");
+	return `${hr}:${min} ${rest.join("").slice(2)}`;
+};
+
 io.on("connection", (socket) => {
 	console.log("connected to socket.io");
 	socket.on("setup", (userData) => {
 		socket.join(userData.userId);
 
 		socket.emit("connected");
+		if (!userIds.find((u) => u.userId === userData.userId)) {
+			userIds.push({
+				userId: userData.userId,
+				socketId: socket.id,
+				lastOnline: getFormattedDate(),
+				status: "online",
+			});
+		} else {
+			userIds = userIds.map((u) =>
+				u.userId === userData.userId
+					? {
+							...u,
+							socketId: socket.id,
+							lastOnline: getFormattedDate(),
+							status: "online",
+					  }
+					: u
+			);
+		}
+
+		io.emit("user joined", userIds);
 	});
 	socket.on("join chat", (room) => {
 		socket.join(room.roomId);
@@ -50,9 +78,13 @@ io.on("connection", (socket) => {
 			socket.in(user._id).emit("message received", newMessageReceived);
 		});
 	});
-	socket.off("setup", () => {
-		console.log("USER DISCONNECTED");
-		socket.leave(userData.userId);
+	socket.on("disconnect", () => {
+		userIds = userIds.map((u) =>
+			u.socketId === socket.id
+				? { ...u, lastOnline: getFormattedDate(), status: "offline" }
+				: u
+		);
+		io.emit("user left", userIds);
 	});
 });
 app.use(express.json());
