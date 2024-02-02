@@ -90,8 +90,8 @@ io.on("connection", (socket) => {
 				{ $set: { status: "offline", lastOnline: Date.now() } }
 			);
 
-			const allUsers = await OnlineStatus.find({});
-			userOnlineLastSeeninfo = allUsers;
+			const existingUsers = await OnlineStatus.find({});
+			userOnlineLastSeeninfo = existingUsers;
 
 			io.emit("user left", userOnlineLastSeeninfo);
 		} catch (error) {

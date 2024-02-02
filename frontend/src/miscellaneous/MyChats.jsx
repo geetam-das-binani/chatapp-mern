@@ -43,7 +43,7 @@ const MyChats = ({ fetchAgain }) => {
 		const [hr, min, ...rest] = new Date(date).toLocaleTimeString().split(":");
 		return `${hr}:${min} ${rest.join("").slice(2)}`;
 	};
-	console.log(onlineUsers);
+
 	return (
 		<Box
 			display={{ base: selectedChat._id ? "none" : "flex", md: "flex" }}

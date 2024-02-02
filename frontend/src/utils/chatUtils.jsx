@@ -56,5 +56,10 @@ export const getUserLastOnlineTime = (onlineUsers, users, loggedUser) => {
 		(u) => u.userId === getSenderId(users, loggedUser)
 	);
 
-	return !onlineUser ? "" : onlineUser.lastOnline;
+	return !onlineUser ? "" : formattedDate(onlineUser.lastOnline);
 };
+function formattedDate(date) {
+	if (!date) return "";
+	const [hr, min, ...rest] = new Date(date).toLocaleTimeString().split(":");
+	return `${hr}:${min} ${rest.join("").slice(2)}`;
+}

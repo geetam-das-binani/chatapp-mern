@@ -244,7 +244,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 								<>
 									{isUserOnline(onlineUsers, selectedChat.users, loggedUser) ===
 									"online"
-										? "online"
+										? "(online)"
 										: getUserLastOnlineTime(
 												onlineUsers,
 												selectedChat.users,
