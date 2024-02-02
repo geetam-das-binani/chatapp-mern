@@ -3,7 +3,11 @@ import { Box, Button, Stack, useToast, Text, Badge } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
 import { userSelectedChat, userChats } from "../Reducers/chatReduer";
 import axios from "axios";
-import { getSender, isUserOnline } from "../utils/chatUtils";
+import {
+	getSender,
+	getSenderFullDetails,
+	isUserOnline,
+} from "../utils/chatUtils";
 import { AddIcon } from "@chakra-ui/icons";
 import ChatLoading from "../components/ChatLoading";
 import GroupChatModal from "./GroupChatModal";
@@ -99,18 +103,48 @@ const MyChats = ({ fetchAgain }) => {
 									py={2}
 									borderRadius="lg"
 									position="relative"
+									display="flex"
+									alignItems="center"
 								>
-									<Text>
-										{!chat.isGroupChat
-											? getSender(chat.users, loggedUser)
-											: chat.chatName}
-									</Text>
-									<Text display="flex" justifyContent="space-between" as="b">
-										{chat?.latestMessage?.content ?? ""}
-										<span>
-											{formattedDate(chat?.latestMessage?.createdAt ?? "")}
-										</span>
-									</Text>
+									{!chat.isGroupChat ? (
+										<img
+											src={getSenderFullDetails(chat.users, loggedUser).pic}
+											alt=""
+											style={{
+												objectFit: "cover",
+												borderRadius: "20px",
+												height: "2.5rem",
+												width: "2.5rem",
+											}}
+										/>
+									) : (
+										""
+									)}
+
+									<Box
+										display="flex"
+										flexDir="column"
+										position="relative"
+										marginLeft={!chat.isGroupChat ? "1rem" : "0"}
+										width="100%"
+									>
+										<Text>
+											{!chat.isGroupChat
+												? getSender(chat.users, loggedUser)
+												: chat.chatName}
+										</Text>
+										<Text display="flex" as="b">
+											<p>{chat?.latestMessage?.content ?? ""}</p>
+											<span
+												style={{
+													position: "absolute",
+													right: 0,
+												}}
+											>
+												{formattedDate(chat?.latestMessage?.createdAt ?? "")}
+											</span>
+										</Text>
+									</Box>
 									<Badge
 										borderRadius="16px"
 										variant="solid"
