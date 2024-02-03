@@ -124,7 +124,7 @@ const SideDrawer = () => {
 			});
 		}
 	};
-	console.log(notifications);
+
 	return (
 		<Fragment>
 			<Box

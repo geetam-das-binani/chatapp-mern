@@ -19,6 +19,10 @@ const chatSchema = new mongoose.Schema(
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "messages",
 		},
+		imageUrl: {
+			type: String,
+			required: true,
+		},
 		groupAdmin: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "users",

@@ -2,6 +2,7 @@ import { asyncHandler } from "../middlewares/asyncHandler.mjs";
 import { Chat } from "../model/chatModel.mjs";
 import { User } from "../model/userModel.mjs";
 import { ErrorHandler } from "../utils/errorHandler.mjs";
+import { v2 as cloudinary } from "cloudinary";
 export const createChat = asyncHandler(async (req, res, next) => {
 	const { userId } = req.body;
 
@@ -62,7 +63,7 @@ export const fetchChats = asyncHandler(async (req, res, next) => {
 	res.status(200).send(chats);
 });
 export const createGroupChat = asyncHandler(async (req, res, next) => {
-	if (!req.body.name || !req.body.selectedUsers.length) {
+	if (!req.body.name || !req.body.selectedUsers.length || !req.body.imageUrl) {
 		return next(new ErrorHandler("Please fill all the fields", 400));
 	}
 
@@ -76,13 +77,23 @@ export const createGroupChat = asyncHandler(async (req, res, next) => {
 		);
 	// add the logged in user to group
 	users.push(req.user._id);
+	console.log(req.body.imageUrl);
+	const mycloud = await cloudinary.uploader.upload(req.body.imageUrl, {
+		folder: "chatApp",
+		width: 150,
+		crop: "scale",
+	});
 	const groupChat = await Chat.create({
 		chatName: req.body.name,
 		isGroupChat: true,
 		users: users,
 		groupAdmin: req.user._id,
+		imageUrl: mycloud.secure_url,
 	});
 	if (!groupChat) return next(new ErrorHandler("Unable to create", 400));
+	await User.findByIdAndUpdate(req.user._id, {
+		isAdmin: true,
+	});
 	const fullGroupChat = await Chat.find({ _id: groupChat._id })
 		.populate("users", "-password")
 		.populate("groupAdmin", "-password");
@@ -157,4 +168,26 @@ export const removeFromGroup = asyncHandler(async (req, res, next) => {
 	if (!removedChatOfUser) return next(new ErrorHandler("Unable to add ", 404));
 
 	res.status(200).json(removedChatOfUser);
+});
+export const leaveGroup = asyncHandler(async (req, res, next) => {
+	const { chatGroupId } = req.body;
+	if (!chatGroupId)
+		return next(new ErrorHandler("Please fill all the fields", 400));
+	const isUserRemoved = await Chat.findByIdAndUpdate(
+		chatGroupId,
+		{
+			$pull: {
+				users: req.user._id,
+			},
+		},
+		{
+			new: true,
+		}
+	);
+
+	if (!isUserRemoved) return next(new ErrorHandler("Unable to leave ", 403));
+
+	res.status(200).json({
+		message: "success",
+	});
 });

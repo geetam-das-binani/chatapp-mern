@@ -25,11 +25,14 @@ const GroupChatModal = ({ children }) => {
 	const dispatch = useDispatch();
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const [groupChatName, setGroupChatName] = useState("");
+	const [imageUrl, setImageUrl] = useState("");
+
 	const [selectedUsers, setSelectedUsers] = useState([]);
 	const [search, setSearch] = useState("");
 	const [searchResults, setSearchResults] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const toast = useToast();
+
 	const handleSearch = async (query) => {
 		setSearch(query);
 		if (!query) {
@@ -85,6 +88,7 @@ const GroupChatModal = ({ children }) => {
 				{
 					selectedUsers: JSON.stringify(selectedUsers.map((i) => i._id)),
 					name: groupChatName,
+					imageUrl,
 				},
 				config
 			);
@@ -100,7 +104,7 @@ const GroupChatModal = ({ children }) => {
 			});
 		} catch (error) {
 			toast({
-				title: "Failed to create ",
+				title: error.response.data.message,
 
 				status: "error",
 				duration: 3000,
@@ -158,6 +162,15 @@ const GroupChatModal = ({ children }) => {
 								mb={1}
 								value={search}
 								onChange={(e) => handleSearch(e.target.value)}
+							/>
+						</FormControl>
+						<FormControl>
+							<Input
+								placeholder="Image Url"
+								mb={1}
+								value={imageUrl}
+								required
+								onChange={(e) => setImageUrl(e.target.value)}
 							/>
 						</FormControl>
 						<Box w="100%" display="flex" flexWrap="wrap">

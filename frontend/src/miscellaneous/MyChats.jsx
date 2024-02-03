@@ -118,14 +118,23 @@ const MyChats = ({ fetchAgain }) => {
 											}}
 										/>
 									) : (
-										""
+										<img
+											src={chat.imageUrl}
+											alt=""
+											style={{
+												objectFit: "cover",
+												borderRadius: "20px",
+												height: "2.5rem",
+												width: "2.5rem",
+											}}
+										/>
 									)}
 
 									<Box
 										display="flex"
 										flexDir="column"
 										position="relative"
-										marginLeft={!chat.isGroupChat ? "1rem" : "0"}
+										marginLeft="1rem"
 										width="100%"
 									>
 										<Text>

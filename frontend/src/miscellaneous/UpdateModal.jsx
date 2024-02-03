@@ -211,9 +211,8 @@ const UpdateModal = ({ fetchAgain, setFetchAgain, fetchMessages }) => {
 				},
 			};
 			await axios.put(
-				`/api/v1/groupremove`,
+				`/api/v1/leavegroup`,
 				{
-					userId: loggedUser.user._id,
 					chatGroupId: selectedChat._id,
 				},
 				config
