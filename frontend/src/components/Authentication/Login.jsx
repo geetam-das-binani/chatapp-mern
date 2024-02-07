@@ -9,10 +9,11 @@ import {
 	InputRightElement,
 	useToast,
 } from "@chakra-ui/react";
-import axios from "axios";
+
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../../Reducers/userReducer";
 import { useDispatch, useSelector } from "react-redux";
+import { handleLoginUser } from "../../actions/userActions";
 
 const Login = () => {
 	const navigate = useNavigate();
@@ -43,42 +44,21 @@ const Login = () => {
 			});
 			return;
 		}
-		try {
-			setLoading(true);
-			const config = {
-				headers: { "Content-Type": "application/json" },
-			};
 
-			const { data } = await axios.post(
-				"/api/v1/login",
-				{ email: userCredentials.email, password: userCredentials.password },
-				config
-			);
-			console.log(data);
-			toast({
-				title: "Success",
-				description: "Login Success",
-				status: "success",
-				duration: 3000,
-				isClosable: true,
-			});
-			dispatch(loginUser(data));
-		} catch (error) {
-			toast({
-				title: "Error",
-				description: `${error.response.data.message}`,
-				status: "error",
-				duration: 3000,
-				isClosable: true,
-			});
-		} finally {
-			setLoading(false);
-		}
+		setLoading(true);
+		handleLoginUser(
+			dispatch,
+			toast,
+			userCredentials.email,
+			userCredentials.password,
+			setLoading
+		);
 	};
+
 	useEffect(() => {
 		if (user) navigate("/chats");
 	}, [user]);
-	console.log(user);
+
 	return (
 		<VStack spacing="5px">
 			<FormControl id="email" isRequired>

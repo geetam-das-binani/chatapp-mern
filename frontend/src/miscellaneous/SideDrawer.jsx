@@ -32,6 +32,7 @@ import UsersListItem from "../components/Users/UsersListItem";
 import { userSelectedChat, userChats } from "../Reducers/chatReduer";
 import { clearNotifications } from "../Reducers/notificationsReducer";
 import { getSender } from "../utils/chatUtils";
+import { accessChat, searchAUser } from "../actions/chatActions";
 const SideDrawer = () => {
 	const { user: loggedUser } = useSelector((state) => state.user);
 	const { chats } = useSelector((state) => state.chat);
@@ -65,64 +66,20 @@ const SideDrawer = () => {
 			});
 			return;
 		}
-		try {
-			setLoading(true);
-			const config = {
-				headers: {
-					Authorization: `Bearer ${loggedUser.token}`,
-				},
-			};
-
-			const { data } = await axios.get(
-				`/api/v1/allusers?keyword=${search}`,
-				config
-			);
-
-			setSearchResults(data.users);
-			setLoading(false);
-		} catch (error) {
-			toast({
-				title: "Error Occured!",
-				description: "Failed to fetch the Search Results",
-				status: "error",
-
-				duration: 3000,
-				isClosable: true,
-				position: "bottom-left",
-			});
-		}
+		searchAUser(loggedUser, search, setSearchResults, setLoading, toast);
 	};
-	const accessChat = async (userId) => {
-		try {
-			setLoadingChat(true);
-			const config = {
-				headers: {
-					Authorization: `Bearer ${loggedUser.token}`,
-					"Content-Type": "application/json",
-				},
-			};
-			const { data } = await axios.post(
-				"/api/v1/createchat",
-				{ userId },
-				config
-			);
-
-			if (!chats.find((c) => c._id === data._id))
-				dispatch(userChats([...chats, data]));
-			setLoadingChat(false);
-			dispatch(userSelectedChat(data));
-
-			onClose();
-		} catch (error) {
-			toast({
-				title: "Error fetching the chat",
-				description: error.message,
-				status: "error",
-				duration: 3000,
-				isClosable: true,
-				position: "bottom-left",
-			});
-		}
+	const handleAccessChat = async (userId) => {
+		accessChat(
+			userId,
+			setLoadingChat,
+			loggedUser,
+			chats,
+			dispatch,
+			userChats,
+			userSelectedChat,
+			onClose,
+			toast
+		);
 	};
 
 	return (
@@ -226,7 +183,7 @@ const SideDrawer = () => {
 								<UsersListItem
 									key={user._id}
 									{...user}
-									handleFunction={() => accessChat(user._id)}
+									handleFunction={() => handleAccessChat(user._id)}
 								/>
 							))
 						)}

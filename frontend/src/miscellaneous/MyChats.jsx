@@ -11,6 +11,7 @@ import {
 import { AddIcon } from "@chakra-ui/icons";
 import ChatLoading from "../components/ChatLoading";
 import GroupChatModal from "./GroupChatModal";
+import { getAllChats } from "../actions/chatActions";
 const MyChats = ({ fetchAgain }) => {
 	const dispatch = useDispatch();
 	const { selectedChat, chats } = useSelector((state) => state.chat);
@@ -18,25 +19,7 @@ const MyChats = ({ fetchAgain }) => {
 	const { onlineUsers } = useSelector((state) => state.onlineUsers);
 	const toast = useToast();
 	const fetchChats = async () => {
-		try {
-			const config = {
-				headers: {
-					Authorization: `Bearer ${loggedUser.token}`,
-				},
-			};
-			const { data } = await axios.get(`/api/v1/getallchats`, config);
-
-			dispatch(userChats(data));
-		} catch (error) {
-			toast({
-				title: "Error Occured",
-				description: error.response.data.message,
-				status: "error",
-				duration: 3000,
-				isClosable: true,
-				position: "bottom-left",
-			});
-		}
+		getAllChats(loggedUser, dispatch, toast);
 	};
 	useEffect(() => {
 		fetchChats();
@@ -143,7 +126,23 @@ const MyChats = ({ fetchAgain }) => {
 												: chat.chatName}
 										</Text>
 										<Text display="flex" as="b">
-											<p>{chat?.latestMessage?.content ?? ""}</p>
+											<p>
+												{chat?.latestMessage?.content ? (
+													chat.latestMessage.content
+												) : chat?.latestMessage?.image ? (
+													<img
+														style={{
+															objectFit: "contain",
+															height: "2rem",
+															width: "2rem",
+															borderRadius: "50%",
+														}}
+														src={chat?.latestMessage?.image}
+													/>
+												) : (
+													""
+												)}
+											</p>
 											<span
 												style={{
 													position: "absolute",

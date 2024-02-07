@@ -60,6 +60,7 @@ export const getUserLastOnlineTime = (onlineUsers, users, loggedUser) => {
 };
 function formattedDate(date) {
 	if (!date) return "";
+	const [month, day, year] = new Date(date).toLocaleDateString().split("/");
 	const [hr, min, ...rest] = new Date(date).toLocaleTimeString().split(":");
-	return `${hr}:${min} ${rest.join("").slice(2)}`;
+	return `${hr}:${min} ${rest.join("").slice(2)} ${day}/${month}/${year}`;
 }

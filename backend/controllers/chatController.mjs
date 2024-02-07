@@ -54,7 +54,9 @@ export const fetchChats = asyncHandler(async (req, res, next) => {
 		.populate("groupAdmin", "-password")
 		.sort({ updatedAt: -1 });
 	if (chats.length === 0)
-		return next(new ErrorHandler("Unable to find chats", 400));
+		return next(
+			new ErrorHandler("No Chats Currently! Search a user to start ", 400)
+		);
 	chats = await User.populate(chats, {
 		select: "name pic email",
 
@@ -77,7 +79,7 @@ export const createGroupChat = asyncHandler(async (req, res, next) => {
 		);
 	// add the logged in user to group
 	users.push(req.user._id);
-	console.log(req.body.imageUrl);
+
 	const mycloud = await cloudinary.uploader.upload(req.body.imageUrl, {
 		folder: "chatApp",
 		width: 150,

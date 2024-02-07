@@ -27,6 +27,11 @@ import { FaImage } from "react-icons/fa";
 import { io } from "socket.io-client";
 import { setNotifications } from "../Reducers/notificationsReducer";
 import { setOnlineUsers } from "../Reducers/onlineReducer";
+import {
+	getAlluserMessages,
+	handleImageOnChat,
+	handleSendMessage,
+} from "../actions/chatActions";
 let ENDPONT = "http://localhost:8000";
 let socket, selectedChatCompare;
 const defaultOptons = {
@@ -51,63 +56,28 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
 	const fetchMessages = async () => {
 		if (!selectedChat._id) return;
-		try {
-			setLoading(true);
-			const config = {
-				headers: {
-					Authorization: `Bearer ${loggedUser.token}`,
-				},
-			};
-			const { data } = await axios.get(
-				`/api/v1/messages/${selectedChat._id}`,
-				config
-			);
-
-			setMessages(data);
-			setLoading(false);
-			socket.emit("join chat", { roomId: selectedChat._id });
-		} catch (error) {
-			toast({
-				title: "Error Occured",
-				description: error.response.data.message,
-				status: "error",
-				duration: 3000,
-				isClosable: true,
-				position: "bottom-left",
-			});
-		}
+		getAlluserMessages(
+			loggedUser,
+			selectedChat._id,
+			setLoading,
+			setMessages,
+			toast,
+			socket
+		);
 	};
 	const sendMessage = async (e) => {
 		if (e.key === "Enter" && newMessage) {
 			socket.emit("stop typing", { roomId: selectedChat._id });
-			try {
-				const config = {
-					headers: {
-						Authorization: `Bearer ${loggedUser.token}`,
-						"Content-Type": "application/json",
-					},
-				};
-				const { data } = await axios.post(
-					`/api/v1/sendmessage`,
-					{
-						content: newMessage,
-						chatId: selectedChat._id,
-					},
-					config
-				);
-				setNewMessage("");
-				socket.emit("new message", data);
-				setMessages([...messages, data]);
-			} catch (error) {
-				toast({
-					title: "Error Occured",
-					description: error.response.data.message,
-					status: "error",
-					duration: 3000,
-					isClosable: true,
-					position: "bottom-left",
-				});
-			}
+			handleSendMessage(
+				loggedUser,
+				newMessage,
+				messages,
+				selectedChat._id,
+				setNewMessage,
+				setMessages,
+				socket,
+				toast
+			);
 		}
 	};
 
@@ -136,37 +106,20 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 		}, timerLength);
 	};
 
-	const handleSendFile = async (e) => {
+	const handleImage = async (e) => {
 		const formData = new FormData();
 		formData.set("chatId", selectedChat._id);
 		formData.set("content", newMessage);
 		formData.set("image", e.target.files[0]);
-
-		try {
-			const config = {
-				headers: {
-					Authorization: `Bearer ${loggedUser.token}`,
-					"Content-Type": "multipart/form-data",
-				},
-			};
-			const { data } = await axios.post(
-				`/api/v1/sendmessage`,
-				formData,
-				config
-			);
-			setNewMessage("");
-			socket.emit("new message", data);
-			setMessages([...messages, data]);
-		} catch (error) {
-			toast({
-				title: "Error Occured",
-				description: error.response.data.message,
-				status: "error",
-				duration: 3000,
-				isClosable: true,
-				position: "bottom-left",
-			});
-		}
+		handleImageOnChat(
+			loggedUser,
+			formData,
+			setNewMessage,
+			setMessages,
+			messages,
+			socket,
+			toast
+		);
 	};
 	useEffect(() => {
 		socket = io(ENDPONT);
@@ -179,7 +132,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 		});
 
 		return () => {
-			socket.disconnect({ userId: loggedUser.user._id });
+			socket.disconnect();
 		};
 	}, [loggedUser.user._id]);
 
@@ -321,7 +274,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 									type="file"
 									id="file"
 									style={{ display: "none" }}
-									onChange={handleSendFile}
+									onChange={handleImage}
 								/>
 								<FaImage />
 							</label>

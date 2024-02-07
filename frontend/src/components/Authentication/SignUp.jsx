@@ -9,10 +9,11 @@ import {
 	InputRightElement,
 	useToast,
 } from "@chakra-ui/react";
-import axios from "axios";
+
 import { useNavigate } from "react-router-dom";
-import { registerUser } from "../../Reducers/userReducer";
+
 import { useDispatch, useSelector } from "react-redux";
+import { handleRegisterUser } from "../../actions/userActions";
 const SignUp = () => {
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
@@ -60,38 +61,16 @@ const SignUp = () => {
 			return;
 		}
 
-		try {
-			setLoading(true);
-			const formData = new FormData();
-			formData.set("name", userCredentials.name);
-			formData.set("email", userCredentials.email);
-			formData.set("password", userCredentials.password);
-			formData.set("pic", pic);
-			const config = {
-				headers: { "Content-Type": "multipart/form-data" },
-			};
-			// const { data } = await axios.post("http://localhost:8000/api/v1/register", formData, config);
-			const { data } = await axios.post("/api/v1/register", formData, config);
+		setLoading(true);
+		const formData = new FormData();
+		formData.set("name", userCredentials.name);
+		formData.set("email", userCredentials.email);
+		formData.set("password", userCredentials.password);
+		formData.set("pic", pic);
 
-			dispatch(registerUser(data));
-			toast({
-				title: "Success",
-				description: "Registered Successfully",
-				status: "success",
-				duration: 3000,
-				isClosable: true,
-			});
-		} catch (error) {
-			toast({
-				title: "Error",
-				description: `${error.response.data.message}`,
-				status: "error",
-				duration: 3000,
-				isClosable: true,
-			});
-		} finally {
-			setLoading(false);
-		}
+		// const { data } = await axios.post("http://localhost:8000/api/v1/register", formData, config);
+
+		handleRegisterUser(dispatch, toast, formData, setLoading);
 	};
 	useEffect(() => {
 		if (user) navigate("/chats");

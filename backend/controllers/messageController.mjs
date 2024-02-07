@@ -11,7 +11,7 @@ export const sendMessage = asyncHandler(async (req, res, next) => {
 		content,
 		chats: chatId,
 	};
-	console.log(newMessage);
+
 	if (req?.file !== undefined) {
 		const mycloud = await cloudinary.uploader.upload(req.file.path, {
 			folder: "chatApp",

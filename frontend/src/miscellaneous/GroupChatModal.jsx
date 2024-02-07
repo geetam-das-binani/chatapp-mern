@@ -14,11 +14,11 @@ import {
 	Input,
 	Box,
 } from "@chakra-ui/react";
-import axios from "axios";
-import { userChats } from "../Reducers/chatReduer";
+
 import { useSelector, useDispatch } from "react-redux";
 import UsersListItem from "../components/Users/UsersListItem";
 import UserBadgeItem from "../components/Users/UserBadgeItem";
+import { createGroupChat, searchUsers } from "../actions/chatActions";
 const GroupChatModal = ({ children }) => {
 	const { chats } = useSelector((state) => state.chat);
 	const { user: loggedUser } = useSelector((state) => state.user);
@@ -31,6 +31,7 @@ const GroupChatModal = ({ children }) => {
 	const [search, setSearch] = useState("");
 	const [searchResults, setSearchResults] = useState([]);
 	const [loading, setLoading] = useState(false);
+	const [groupChatLoading, setGroupChatloading] = useState(false);
 	const toast = useToast();
 
 	const handleSearch = async (query) => {
@@ -38,31 +39,7 @@ const GroupChatModal = ({ children }) => {
 		if (!query) {
 			return;
 		}
-		try {
-			setLoading(true);
-			const config = {
-				headers: {
-					Authorization: `Bearer ${loggedUser.token}`,
-				},
-			};
-			const { data } = await axios.get(
-				`/api/v1/allusers?keyword=${search}`,
-				config
-			);
-
-			setLoading(false);
-			setSearchResults(data.users);
-		} catch (error) {
-			toast({
-				title: "Error Occured!",
-				description: "Failed to fetch the Search Results",
-				status: "error",
-
-				duration: 3000,
-				isClosable: true,
-				position: "bottom-left",
-			});
-		}
+		searchUsers(setLoading, loggedUser, search, setSearchResults, toast);
 	};
 	const handleSubmit = async () => {
 		if (!groupChatName || selectedUsers.length < 2) {
@@ -76,42 +53,17 @@ const GroupChatModal = ({ children }) => {
 			});
 			return;
 		}
-
-		try {
-			const config = {
-				headers: {
-					Authorization: `Bearer ${loggedUser.token}`,
-				},
-			};
-			const { data } = await axios.post(
-				`/api/v1/groupcreate`,
-				{
-					selectedUsers: JSON.stringify(selectedUsers.map((i) => i._id)),
-					name: groupChatName,
-					imageUrl,
-				},
-				config
-			);
-			dispatch(userChats([...data, ...chats]));
-			onClose();
-			toast({
-				title: "New Group Chat Created!",
-
-				status: "success",
-				duration: 3000,
-				isClosable: true,
-				position: "bottom",
-			});
-		} catch (error) {
-			toast({
-				title: error.response.data.message,
-
-				status: "error",
-				duration: 3000,
-				isClosable: true,
-				position: "bottom",
-			});
-		}
+		createGroupChat(
+			loggedUser,
+			selectedUsers,
+			groupChatName,
+			imageUrl,
+			dispatch,
+			chats,
+			onClose,
+			toast,
+			setGroupChatloading
+		);
 	};
 	const handleGroup = (userToAdd) => {
 		if (selectedUsers.includes(userToAdd)) {
@@ -200,7 +152,11 @@ const GroupChatModal = ({ children }) => {
 					</ModalBody>
 
 					<ModalFooter>
-						<Button colorScheme="blue" onClick={handleSubmit}>
+						<Button
+							colorScheme="blue"
+							isLoading={groupChatLoading}
+							onClick={handleSubmit}
+						>
 							Create Chat
 						</Button>
 					</ModalFooter>
