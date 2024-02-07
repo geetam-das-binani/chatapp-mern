@@ -1,6 +1,6 @@
 import React from "react";
 import { Box } from "@chakra-ui/react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import SingleChat from "../components/SingleChat";
 const ChatBox = ({ fetchAgain, setFetchAgain }) => {
 	const { selectedChat } = useSelector((state) => state.chat);

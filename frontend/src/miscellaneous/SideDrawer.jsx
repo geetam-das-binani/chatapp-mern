@@ -22,7 +22,7 @@ import {
 	Badge,
 } from "@chakra-ui/react";
 import { BellIcon, ChevronDownIcon } from "@chakra-ui/icons";
-import axios from "axios";
+
 import React, { useState, Fragment } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ProfileModal from "./ProfileModal";

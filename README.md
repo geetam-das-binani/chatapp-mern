@@ -27,6 +27,7 @@ This is a simple chat application built using the MERN (MongoDB, Express.js, Rea
 
 4. Create a config directory in the server directory and add a config.env file in it any other environment variables:
 
+```plaintext
 MONGODB_URI
 JWT_SECRET
 JWT_EXPIRE
@@ -45,3 +46,4 @@ PORT
 - HTML
 - CSS
 - JavaScript
+```

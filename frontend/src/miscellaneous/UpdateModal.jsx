@@ -19,7 +19,7 @@ import {
 import { ViewIcon } from "@chakra-ui/icons";
 import { useDispatch, useSelector } from "react-redux";
 import UserBadgeItem from "../components/Users/UserBadgeItem";
-import axios from "axios";
+
 import { userSelectedChat } from "../Reducers/chatReduer";
 import UsersListItem from "../components/Users/UsersListItem";
 import {

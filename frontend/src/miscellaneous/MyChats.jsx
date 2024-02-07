@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import { Box, Button, Stack, useToast, Text, Badge } from "@chakra-ui/react";
 import { useSelector, useDispatch } from "react-redux";
-import { userSelectedChat, userChats } from "../Reducers/chatReduer";
-import axios from "axios";
+import { userSelectedChat } from "../Reducers/chatReduer";
+
 import {
 	getSender,
 	getSenderFullDetails,

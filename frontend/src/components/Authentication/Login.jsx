@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 
 import { useNavigate } from "react-router-dom";
-import { loginUser } from "../../Reducers/userReducer";
+
 import { useDispatch, useSelector } from "react-redux";
 import { handleLoginUser } from "../../actions/userActions";
 
@@ -96,19 +96,6 @@ const Login = () => {
 					isLoading={loading}
 				>
 					Login{" "}
-				</Button>
-				<Button
-					colorScheme="red"
-					width="100%"
-					style={{ marginTop: 15 }}
-					onClick={() =>
-						setUserCredentials({
-							email: "geetambinani6@gmail.com",
-							password: "123456",
-						})
-					}
-				>
-					Get Guest User Credentials{" "}
 				</Button>
 			</FormControl>
 		</VStack>
