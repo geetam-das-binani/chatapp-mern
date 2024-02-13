@@ -32,7 +32,8 @@ import {
 	handleImageOnChat,
 	handleSendMessage,
 } from "../actions/chatActions";
-let ENDPONT = "http://localhost:8000";
+// let ENDPONT = "http://localhost:8000";
+let ENDPONT = "https://wechat-0ytb.onrender.com";
 let socket, selectedChatCompare;
 const defaultOptons = {
 	loop: true,
